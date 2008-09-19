@@ -58,9 +58,7 @@
       var isImage = $(this).attr('image');
       var link = calc_link(name, url, isImage);
       var ref = calc_link_ref(name, url, isImage);
-      $("#edit_textarea").replaceSelection(link, true);
       $("#edit_textarea").val($("#edit_textarea").val()+"\n"+ ref);
-      $.each($("#edit_textarea"), update);
       e.preventDefault();
       return false;
     });
