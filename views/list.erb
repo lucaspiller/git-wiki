@@ -1,19 +1,33 @@
-<% if @pages.empty? %>
-  <h1>No pages yet</h1>
-<% else %>
-  <h1>All pages</h1>
+<div id="cont">
 
-  <div class="content">
-    <ul>
-      <% @pages.each do |page| %>
-        <li>
-          <strong><a href="/<%= page.basename %>"><%= page.basename %></a></strong> &mdash;
-          <a href="/e/<%= page.basename %>">edit</a> &bull;
-          <a href="/h/<%= page.basename %>">history</a> 
-	  <!-- &bull;
-          <a href="javascript:var q; if (window.getSelection) q=window.getSelection(); else if (document.selection) q=document.selection.createRange().text; if (q != '') location.href='<%= page_url(page.basename) %>/append?text='+encodeURIComponent(q+' (from &quot;'+document.title+'&quot;:'+location.href+')'); else location.href='<%= page_url(page.basename) %>/append?text='+encodeURIComponent('&quot;'+document.title+'&quot;:'+location.href);" title="Click to save current page in browser to '<%= page.basename %>' page.  Select text to save it along with the link.">bookmarklet</a> -->
-        </li>
-      <% end %>
-    </ul>
-  </div>
+<% if @pages.empty? %>
+	<h1>No pages yet</h1>
+<% else %>
+	<h1>All pages</h1>
+	<% @pages.each do |page| %>
+		<div class="page">
+			<strong><a href="/<%= page.basename %>"><%= page.basename.capitalize %></a></strong>
+			<ul class="inline">
+				<li>
+					<script type="text/javascript">
+				 	document.write(time_ago_in_words(<%= page.updated_at.for_time_ago_in_words %>) + ' ago');
+					</script>
+				</li>
+				<li>
+					&mdash;
+				</li>
+				<li>
+					<a href="/e/<%= page.basename %>">edit</a>
+				</li>
+				<li>
+					&bull;
+				<li>
+				<li>
+					<a href="/h/<%= page.basename %>">history</a>
+				</li>
+			</ul>
+		</div>
+	<% end %>
 <% end %>
+
+</div>

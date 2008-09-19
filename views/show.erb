@@ -1,3 +1,63 @@
+<div id="sidebar">
+	<ul>
+		<li>
+			<% if params[:rev] %>
+				<a href="/<%= @page.basename %>">Current</a>
+			<% else %>
+				<a href="/e/<%= @page.basename %>">Edit</a>
+			<% end %>
+		</li>
+		
+		<li>
+			&bull;
+		</li>
+		
+		<li>
+			<a href="/h/<%= @page.basename %>">History</a>
+		</li>
+
+		<% if @page.previous_commit %>
+			<li>
+				&bull;
+			</li>
+		
+			<li>
+				<a href="/h/<%= @page.basename %>/<%= @page.previous_commit %>">Older</a>
+			</li>
+		<% end %>
+		
+		<% if @page.next_commit %>
+			<li>
+				&bull;
+			</li>
+			
+			<li>
+				<a href="/h/<%= @page.basename %>/<%= @page.next_commit %>">Newer</a>
+			</li>
+		<% end %>
+	</ul>
+
+	<div id="last_changed" class="page_info">
+		<strong>Changed:</strong>
+		<script type="text/javascript">
+	 	document.write(time_ago_in_words(<%= @page.updated_at.for_time_ago_in_words %>) + ' ago');
+		</script>
+	</div>
+	
+	<div id="branch" class="page_info">
+		<strong>Branch:</strong>
+		<%= $repo.current_branch %>
+	</div>
+</div>
+
+<div id="cont">
+	<div id="messages" class="hide"></div>
+	<h1><%= @page.title.capitalize %></h1>
+	<%= @env %>
+	
+	<div class="content edit_area"><%= @page.body %></div>
+</div>
+
 <script type="text/javascript">
   $(document).ready(function() {
     $(".edit_area").editable('/eip/<%= @page.basename %>', {
@@ -13,36 +73,3 @@
     });
   });
 </script>
-
-<h1><%= @page.title %></h1>
-
-<%= @env %>
-
-<div class="sub_nav">
-  <% if params[:rev] %>
-    <a href="/<%= @page.basename %>" class="nav_link">current</a> &bull;
-  <% else %>
-    <a href="/e/<%= @page.basename %>" class="nav_link">edit</a> &bull;
-  <% end %>
-
-  <a href="/h/<%= @page.basename %>" class="nav_link">history</a>
-
-  <% if @page.previous_commit %>
-    &bull; <a href="/h/<%= @page.basename %>/<%= @page.previous_commit %>" class="nav_link">older</a>
-  <% end %>
-
-  <% if @page.next_commit %>
-    &bull; <a href="/h/<%= @page.basename %>/<%= @page.next_commit %>" class="nav_link">newer</a>
-  <% end %>
-
-  <div class="sub_nav details">
-    <script type="text/javascript">
-      document.write(time_ago_in_words(<%= @page.updated_at.for_time_ago_in_words %>) + ' ago');
-    </script>
-    <br />
-    <%= $repo.current_branch %> branch
-  </div>
-
-</div>
-
-<div class="content edit_area"><%= @page.body %></div>

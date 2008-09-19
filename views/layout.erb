@@ -1,42 +1,53 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title><%= @title %></title>
-    <link rel="stylesheet" href="/style.css" type="text/css" media="screen" />
-    <script type="text/javascript" src="/app.js"></script>
-    <script type="text/javascript" src="/jquery.min.js"></script>
-    <script type="text/javascript" src="/jeditable.min.js"></script>
-    <script type="text/javascript" src="/jquery-fieldselection.js"></script>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title><%= @title %></title>
+		<link rel="stylesheet" href="/style.css" type="text/css" media="screen" />
+		<script type="text/javascript" src="/app.js"></script>
+		<script type="text/javascript" src="/jquery.min.js"></script>
+		<script type="text/javascript" src="/jeditable.min.js"></script>
+		<script type="text/javascript" src="/jquery-fieldselection.js"></script>
 
-    <% if @layout_options.include?(:markitup) %>
-      <script type="text/javascript" src="/markitup/jquery.markitup.pack.js"></script>
-      <script type="text/javascript" src="/markitup/sets/markdown/set.js"></script>
-      <link rel="stylesheet" type="text/css" href="/markitup/skins/markitup/style.css" media="screen"/>
-      <link rel="stylesheet" type="text/css" href="/markitup/sets/markdown/style.css" media="screen"/>
-    <% end %>
-
-  </head>
-  <body>
-    <div id="container">
-      <form method="get" action="/a/search">
-        <ul class="nav_list" id="top_nav">
-          <li><a href="/" class="nav_link">top</a></li>
-          <% if (@page && @page.subwiki) %>
-          <li><a href="<%= %{/#{@page.subwiki}/#{HOMEPAGE}} %>" class="nav_link"><%= @page.subwiki %></a></li>
-          <% end %>
-          <li><a href="/a/branches" class="nav_link">branches</a></li>
-          <li><a href="/a/history" class="nav_link">history</a></li>
-          <li><a href="/a/list/all" class="nav_link">pages</a></li>
-          <li><a href="/a/tarball" class="nav_link">export</a></li>
-          <li><input type="text" name="search" size="15" value="search" id="search_field" onfocus="clearField(this);" /></li>
-        </ul>
-      </form>
-      <div id="messages" class="hide"></div>
-      <%= yield %>
-      <div id="footer">
-        powered by <a href="http://github.com/jeffbski/git-wiki/network">git-wiki</a>
-      </div>
-    </div>
-  </body>
+		<% if @layout_options.include?(:markitup) %>
+			<script type="text/javascript" src="/markitup/jquery.markitup.pack.js"></script>
+			<script type="text/javascript" src="/markitup/sets/markdown/set.js"></script>
+			<link rel="stylesheet" type="text/css" href="/markitup/skins/markitup/style.css" media="screen"/>
+			<link rel="stylesheet" type="text/css" href="/markitup/sets/markdown/style.css" media="screen"/>
+		<% end %>
+	</head>
+	<body>
+		<div id="container">
+			<div id="header">
+				<div class="wrap">
+					<h1><%= @page_title or 'Git Wiki' %></h1>
+					<div class="bottom">
+						<ul>
+							<li><a href="/">Home</a></li>
+							<% if (@page && @page.subwiki) %>
+								<li><a href="<%= %{/#{@page.subwiki}/#{HOMEPAGE}} %>"><%= @page.subwiki.capitalize %></a></li>
+							<% end %>
+							<li><a href="/a/branches">Branches</a></li>
+							<li><a href="/a/history">History</a></li>
+							<li><a href="/a/list/all">Pages</a></li>
+							<li><a href="/a/tarball">Export</a></li>
+						</ul>
+						<form method="get" action="/a/search">
+							<input type="text" name="search" value="Search" id="search_field" onfocus="clearField(this);" />
+						</form>
+					</div>
+				</div>
+			</div>
+			<div id="content">
+				<div class="wrap">
+					<%= yield %>
+				</div>
+			</div>
+			<div id="footer">
+				<div class="wrap">
+					powered by <a href="http://github.com/jeffbski/git-wiki/network">git-wiki</a>
+				</div>
+			</div>
+		</div>
+	</body>
 </html>

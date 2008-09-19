@@ -1,231 +1,198 @@
-/* elements */
-
 body {
-  background-color: #fff;
-  color: #333;
-  font-family: Helvetica, Arial, "Deja Vu Sans", "Bitstream Vera Sans", sans-serif;
-  font-size: .95em;
-  line-height: 1.6em;
-  margin: 2em;
+	background-color: rgb(221, 221, 221);
+	color: #333;
+	font-family: Helvetica, Arial, "Deja Vu Sans", "Bitstream Vera Sans", sans-serif;
+	font-size: .95em;
+	line-height: 1.6em;
+	margin: 0;
+	padding: 0;
 }
 
 a {
-  color: #6d7fa3;
-  text-decoration: none;
+	text-decoration: none;
+	color: #666;
 }
-a:visited { color: #7b69b0; }
-a:hover { text-decoration: underline; }
-a.notfound { background-color: yellow; }
 
-code, pre {
-  font-family: "Deja Vu Sans Mono", "Bitstream Vera Sans Mono", "Inconsolata", "Consolas", monospace;
+a:hover {
+	text-decoration: underline;
+}
+
+#container {
+	min-width: 950px;
+}
+
+.wrap {
+	position: relative;
+	margin: 0 20px;
 }
 
 h1 {
-  color: #333;
-  font-size: 1.8em;
-  margin: 24px 0 8px 0;
+	margin-top: 0;
+}
+
+label {
+	display: block;
+	font-weight: bold;
+}
+
+input[type=text], textarea {
+	border: 1px solid #ccc;
+	font-family: Helvetica, Arial, "Deja Vu Sans", "Bitstream Vera Sans", sans-serif;
+	width: 95%;
+	color: #333;
 }
 
 input[type=text] {
-  border: 1px solid #ccc;
-  font-family: Helvetica, Arial, "Deja Vu Sans", "Bitstream Vera Sans", sans-serif;
-  font-size: 0.875em;
+	font-size: 1.3em;
+	padding: 3px;
 }
-
-label { font-size: .9em; }
-
-table {
-  font-size: 0.9em;
-  width: 100%;
-        border-width: thin thin thin thin;
-        border-spacing: 5px;
-        border-style: outset outset outset outset;
-        border-color: gray gray gray gray;
-        border-collapse: collapse;
-        background-color: white;
-}
-
-th {
-        border-width: thin thin thin thin;
-        padding: 5px 5px 5px 5px;
-        border-style: inset inset inset inset;
-        border-color: gray gray gray gray;
-        background-color: white;
-}
-
-td {
-        border-width: thin thin thin thin;
-        padding: 5px 5px 5px 5px;
-        border-style: inset inset inset inset;
-        border-color: gray gray gray gray;
-        background-color: white;
-}
-
-
-
 
 textarea {
-  border: 1px solid #ccc;
-  font-family: "Deja Vu Sans Mono", "Bitstream Vera Sans Mono", "Inconsolata", "Consolas", monospace;
-  font-size: .9em;
-  padding: 5px;
+	font-size: 1.1em;
+	padding: 5px;
+	height: 75px;
 }
 
-ul {
-  list-style-type: square;
-  padding: 0 0 1em 1.4em;
+/*
+ * header
+ */
+#header {
+	background: rgb(90, 158, 207);
 }
 
-/* classes */
-
-.cancel {
-  font-weight: normal;
-  text-decoration: none;
-  font-size: 14px;
-}
-.cancel:before { content: "("; }
-.cancel:after { content: ")" }
-
-.clearer { clear: both; }
-
-.content {
-  margin-left: 35%;
-  padding: 10px 10px 2px 10px;
+#header .wrap {
+	height: 100px;
 }
 
-.content h1, .content h2, .content h3, .content h4 {
-  padding: 0 0 .4em 0;
-  margin: 0 0 0 0;
-}
-.content h1 { font-size: 2em; }
-.content h2 { font-size: 1.8em; }
-.content h3 { font-size: 1.6em; }
-.content h4 { font-size: 1.4em; }
-
-.delta {
-  font-size: 1.1em;
-  padding: 0;
+#header h1 {
+	margin: 0;
+	position: absolute;
+	top: 30px;
+	color: #fff;
 }
 
-.edit textarea {
-  display: block;
-  margin-bottom: 5px;
-  max-height: 300px;
-  min-width: 100%;
+#header .bottom {
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
 }
 
-.hide {
-  display: none;
+#header ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
 }
 
-.nav_link, .nav_link:visited {
-  display: inline;
-  padding: 3px;
-  color: #666;
+#header ul li {
+	float: left;
+	height: 20px;
+	background: rgb(0, 68, 119);
+	padding: 3px 5px;
+	margin-right: 10px;
 }
 
-.nav_link:hover {
-  background-color: #d1ccdb;
-  color: #333;
-  text-decoration: none;
+#header ul li a {
+	color: #fff;
 }
 
-.nav_list, #footer {
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
-  list-style-type: none;
-  padding: 4px;
-  text-align: right;
+#header form {
+	position: absolute;
+	right: 0;
+	bottom: 8px;
+	width: 180px;
 }
 
-.nav_list li {
-  display: inline;
-  padding-right: 10px;
+/*
+ * content
+ */
+
+#content {
+	margin-top: 10px;
 }
 
-.niceform label, .niceform input[type=text] {
-        display: block;
-        width: 200px;
-        float: left;
-        margin-bottom: 10px;
+#cont {
+	background: #fff;
+	margin-right: 310px;
+	padding: 20px;
 }
 
-.niceform label {
-        text-align: right;
-        width: 150px;
-        padding-right: 20px;
+#sidebar {
+	width: 300px;
+	float: right;
 }
 
-.niceform br {
-        clear: left;
+#sidebar ul, ul.inline {
+	list-style: none;
+	padding: 0;
+	margin: 0;
 }
 
-.right { text-align: right; }
-
-.search_result { margin-bottom: 15px; }
-
-.search_result .match {
-  line-height: 1em;
-  margin-bottom: 15px;
+#sidebar ul li, ul.inline li {
+	display: inline;
+	text-transform: lowercase;
 }
 
-.search_term { color: #999; }
-
-.submit {
-  font-size: 1.2em;
-  font-weight: bold;
+#sidebar h3 {
+	margin-bottom: 0;
 }
 
-.sub_nav {
-  float: left;
-  padding-top: 8px;
+/*
+ * footer
+ */
+
+#footer {
+	margin-top: 10px;
 }
 
-.sub_nav .details {
-  color: #888;
-  font-size: .85em;
-  margin-left: 0.3em;
+#footer .wrap {
+	background: #333;
+	text-align: right;
+	padding: 10px;
 }
-span.detail {
-        color: #888;
-        font-size: .85em;
-}
-div.attach-options {
-        margin-left: 10px;
-        margin-bottom: 10px;
-        font-size: .85em;
-        color: #888;
-}
-/* ids */
 
-#container {
- clear: both;
- margin: auto;
- width: 90%;
+#footer, #footer a {
+	color: #fff;
+}
+
+/*
+ * page
+ */
+
+#sidebar .page_info strong {
+	display: none;
 }
 
 #edit_textarea {
-  height: 35em;
-  margin-top: 1.5em;
-  width: 100%;
+	height: 400px;
 }
 
-#message_textarea {
-  height: 4em;
-  width: 100%;
+/*
+ * editor
+ */
+
+#cont .markItUpEditor {
+	background-image: none;
+	padding: 10px;
+	border: 1px solid #ccc;
 }
 
-#messages {
-  background: yellow;
-  text-align: center;
+#cont .markItUpContainer {
+	border: none;
 }
 
-#footer { clear: both; }
-#footer a, #footer a:visited { color: #666; }
+/*
+ * search results
+ */
 
-#search_field {
-  border: 1px solid #ccc;
-  color: #999;
+#cont .page {
+	margin-top: 5px;
+	margin-left: 20px;
 }
 
+#cont .page p {
+	margin: 0;
+}
+
+#cont .page ul.inline {
+	margin-left: 20px;
+}
