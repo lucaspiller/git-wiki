@@ -2,32 +2,27 @@
 <script language="javascript" type="text/javascript" src="/sh_diff.min.js"></script>
 <link rel="stylesheet" href="/sh_style.css" type="text/css" media="screen" />
 
+<div id="cont">
+	<pre class="sh_diff"><%= @page.delta(params[:rev]) %></pre>
+
+	<script type="text/javascript">
+		sh_highlightDocument();
+	</script>
+</div>
+
 <div id="sidebar">
 	<ul>
 		<li>
 			<a href="/a/patch/<%= @page.basename %>/<%= params[:rev] %>">Patch file</a>
 		</li>
 		<li>
-			&bull;
-		</li>
-		<li>
 			<a href="/h/<%= @page.basename %>">History</a>
-		</li>
-		<li>
-			&bull;
 		</li>
 		<li>
   			<a href="/e/<%= @page.basename %>">Edit</a>
 		</li>
+		<li>
+			<a href="/">Home</a>
+		</li>
 	</ul>
-</div>
-
-<div id="cont">
-	<h1>Diff of <a href="/<%= @page.basename %>"><%= @page.basename.capitalize %></a></h1>
-
-	<pre class="sh_diff"><%= @page.delta(params[:rev]) %></pre>
-
-	<script type="text/javascript">
-		sh_highlightDocument();
-	</script>
 </div>

@@ -1,96 +1,65 @@
-<div id="sidebar">
-	<ul>
-		<li>
-			<a href="/<%= @page.basename %>">Back</a>
-		</li>
-		
-		<li>
-			&bull;
-		</li>
-		
-		<li>
-			<a href="/a/file/upload/<%= @page.basename %>">Attach</a>
-		</li>
-
-		<% if @page.tracked? %>
-			<li>
-				&bull;
-			</li>
-		
-			<li>
-				<a href="/h/<%= @page.basename %>">History</a>
-			</li>
-		<% end %>
-
-		<li>
-			&bull;
-		</li>
-
-		<li>
-			<a id="delete_link" href="#">Delete</a>
-		</li>
-	</ul>
-
-	<% if files = @page.attachments %>
-	<h3>Attachments</h3>
-		<div id="attachments">
-			<% files.each do |file| %>
-				<div class="attachment_item">
-					<a href="<%= file.link_path %>"><%= file.name %></a>
-					<span class="detail">(<%= file.size %>)</span>
-					<div class="attach-options">
-						<ul>
-							<li>
-								<a class="delete_attachment" href="<%= file.delete_path %>" aname="<%= file.name %>">Delete</a>
-							</li>
-							<li>
-								&bull;
-							</li>
-							<li>
-								<a href="<%= file.link_path %>">Download</a>
-							</li>
-							<li>
-								&bull;
-							</li>
-							<li>
-								<a href="#" class="replace" name="<%= file.nice_name %>" url="<%= file.link_path %>" image="<%= (file.image?) ? true : false %>">Insert</a>
-							</li>
-						</ul>
-					</div>
-				</div>
-			<% end %>
-		</div>
-	<% end %>
-	
-	<div id="markdown_syntax">
-		<h3>Syntax Reference</h3>
-		<p>
-			*bold* &rarr; <strong>bold</strong><br />
-			_italic_ &rarr; <em>italic</em><br />
-			&#91;My Site&#93;(http://www.mysite.com/) &rarr; <a href="http://www.mysite.com/">My Site</a>
-		</p>
-		<p>
-			<a href="http://daringfireball.net/projects/markdown/syntax" target="MarkdownDaringFireball">Full Markdown syntax</a>
-		</p>
-	</div>
-</div>
-
 <div id="cont">
-	<h1>Editing <a href="/<%= @page.name %>"><%= @page.title.capitalize %></a></h1>
-	
 	<form method="post" action="/e/<%= @page.basename %>">
 		<p>
 			<textarea name="body" id="edit_textarea" rows="4" cols="50"><%= @page.raw_body %></textarea>
 		</p>
 		<p>
-			<label>Message</label>
-			<textarea name="message" rows="4" cols="50" id="message_textarea"></textarea>
-			<input type="hidden" name="content_type" value="markdown"/>
+			<label>Syntax Reference</label>
+			*bold* &rarr; <strong>bold</strong><br />
+			_italic_ &rarr; <em>italic</em><br />
+			&#91;My Site&#93;(http://www.mysite.com/) &rarr; <a href="http://www.mysite.com/">My Site</a>
 		</p>
 		<p>
 			<button type="submit">Save</button>
+			<% if @page.tracked? %>
+				<a href="/<%= @page.basename %>">Cancel</a>
+			<% else %>
+				<a href="/">Cancel</a>
+			<% end %>
 		</p>
 	</form>
+	
+	<% if files = @page.attachments %>
+	<div id="attachments">
+		<h3>Attachments</h3>
+		<% files.each do |file| %>
+			<div class="attachment_item">
+				<a href="<%= file.link_path %>"><%= file.nice_name %></a>
+				<span class="detail">(<%= file.size %>)</span>
+				<a href="#" class="replace" name="<%= file.nice_name %>" url="<%= file.link_path %>" image="<%= (file.image?) ? true : false %>">Insert</a>
+<!--			<div class="attach-options">
+					<ul>
+						<li>
+							<a class="delete_attachment" href="<%= file.delete_path %>" aname="<%= file.name %>">Delete</a>
+						</li>
+						<li>
+							<a href="<%= file.link_path %>">Download</a>
+						</li>
+						<li>
+							<a href="#" class="replace" name="<%= file.nice_name %>" url="<%= file.link_path %>" image="<%= (file.image?) ? true : false %>">Insert</a>
+						</li>
+					</ul>
+				</div>-->
+			</div>
+		<% end %>
+	</div>
+	<% end %>
+</div>
+
+<div id="sidebar">
+	<ul>
+		<% if @page.tracked? %>
+			<li>
+				<a href="/h/<%= @page.basename %>">History</a>
+			</li>
+			<li>
+				<a id="delete_link" href="#">Delete</a>
+			</li>
+		<% end %>
+		<li>
+			<a href="/">Home</a>
+		</li>
+	</ul>
 </div>
 
 <script type="text/javascript">
@@ -148,6 +117,4 @@
 			return link;
 		}
 	}
-
-$("#edit_textarea").markItUp(markItUpMarkdownSettings);
 </script>

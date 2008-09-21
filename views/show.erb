@@ -1,36 +1,33 @@
+<div id="cont">
+	<div id="messages" class="hide"></div>
+	<%= @env %>
+	
+	<div class="content edit_area"><%= @page.body %></div>
+</div>
+
 <div id="sidebar">
+	<div id="last_changed" class="page_info">
+		Changed
+		<script type="text/javascript">
+		document.write(time_ago_in_words(<%= @page.updated_at.for_time_ago_in_words %>) + ' ago');
+		</script>
+	</div>
+	
 	<ul>
 		<li>
 			<% if params[:rev] %>
-				<a href="/<%= @page.basename %>">Current</a>
+				<a href="/<%= @page.basename %>">Latest</a>
 			<% else %>
 				<a href="/e/<%= @page.basename %>">Edit</a>
 			<% end %>
 		</li>
-		
-		<li>
-			&bull;
-		</li>
-		
 		<li>
 			<a href="/h/<%= @page.basename %>">History</a>
 		</li>
+		<li>
+			<a href="/">Home</a>
+		</li>
 	</ul>
-
-	<div id="last_changed" class="page_info">
-		<strong>Changed:</strong>
-		<script type="text/javascript">
-	 	document.write(time_ago_in_words(<%= @page.updated_at.for_time_ago_in_words %>) + ' ago');
-		</script>
-	</div>
-</div>
-
-<div id="cont">
-	<div id="messages" class="hide"></div>
-	<h1><%= @page.title.capitalize %></h1>
-	<%= @env %>
-	
-	<div class="content edit_area"><%= @page.body %></div>
 </div>
 
 <script type="text/javascript">

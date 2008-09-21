@@ -1,46 +1,37 @@
+<div id="cont">
+	<% @page.history.each do |c| %>
+		<div class="page">
+			<script type="text/javascript">
+				document.write('<strong>' + time_ago_in_words(<%= c.committer_date.for_time_ago_in_words %>) + ' ago</strong>');
+			</script>
+			<ul class="inline">
+				<li>
+					&mdash;
+				</li>
+				<li>
+					<a href="/h/<%= @page.basename %>/<%= c.sha %>"><%= c.message %></a>
+				</li>
+				<% unless @page.history.first == c %>
+					<li>
+						<a href="/d/<%= @page.basename %>/<%= c.sha %>">Diff</a>
+					</li>
+				<% else %>
+					<li>
+						Current
+					</li>
+				<% end %>
+			</ul>
+		</div>
+	<% end %>
+</div>
+
 <div id="sidebar">
 	<ul>
 		<li>
 			<a href="/<%= @page.basename %>" class="nav_link">current</a>
 		</li>
 		<li>
-			 &bull;
-		</li>
-		<li>
 			<a href="/e/<%= @page.basename %>" class="nav_link">edit</a>
 		</li>
 	</ul>
-</div>
-
-<div id="cont">
-	<h1>History of <a href="/<%= @page.basename %>"><%= @page.basename.capitalize %></a></h1>
-
-<div class="content">
-<% @page.history.each do |c| %>
-	<div class="page">
-		<script type="text/javascript">
-			document.write('<strong>' + time_ago_in_words(<%= c.committer_date.for_time_ago_in_words %>) + ' ago</strong>');
-		</script>
-		<ul class="inline">
-			<li>
-				&mdash;
-			</li>
-			<li>
-				<a href="/h/<%= @page.basename %>/<%= c.sha %>"><%= c.message %></a>
-			</li>
-			<li>
-				&bull;
-			</li>
-			<% unless @page.history.first == c %>
-				<li>
-					<a href="/d/<%= @page.basename %>/<%= c.sha %>">Diff</a>
-				</li>
-			<% else %>
-				<li>
-					Current
-				</li>
-			<% end %>
-		</ul>
-	</div>
-<% end %>
 </div>
