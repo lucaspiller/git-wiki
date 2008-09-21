@@ -11,7 +11,7 @@ OPTS_RE = { :param_regex => {
     :rev => '[a-f0-9]{40}' }  # 40 char guid
 } unless defined?(OPTS_RE)
 
-get('/') { redirect "/#{HOMEPAGE}" }
+get('/') { redirect "/a/list" }
 
 # page paths
 
