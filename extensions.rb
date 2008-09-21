@@ -7,16 +7,6 @@ def require_gem_with_feedback(gem)
 end
 
 class String
-  # convert to a filename (substitute _ for any whitespace, discard anything but word chars, underscores, dots, and dashes, slashes
-  def wiki_filename
-    self.gsub( /\s+/, '_' ).gsub( /[^A-Za-z0-9\._\/-]/ , '')
-  end
-
-  # unconvert filename into title (substitute spaces for _)
-  def unwiki_filename
-    self.gsub( '_', ' ' )
-  end
-
   def starts_with?(str)
     str = str.to_str
     head = self[0, str.length]
@@ -37,6 +27,16 @@ class String
   # true if string is an attachment dir or file foo_files/bar.jpg, _foo, foo/bar_files/file.jpg
   def attach_dir_or_file?
     /#{ATTACH_DIR_SUFFIX}\// =~ self
+  end
+  
+  # Convert a string to CamelCase
+  def wikify
+    self.gsub(/([A-Z])/) { ' ' + $1 }.downcase.gsub(/[^a-zA-Z]/, ' ').strip.gsub(/(^|\s+)(.)/) { $2.upcase }
+  end
+
+  # Convert a string to underscore_seperated
+  def scorify
+    self.gsub(/([A-Z])/) { ' ' + $1 }.downcase.gsub(/[^a-zA-Z]/, ' ').strip.gsub(/\s+/, '_')
   end
 end
 
