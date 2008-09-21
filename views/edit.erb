@@ -53,7 +53,7 @@
 								&bull;
 							</li>
 							<li>
-								<a href="#" class="replace" name="<%= file.name.unwiki_filename %>" url="<%= file.link_path %>" image="<%= (file.image?) ? true : false %>">Insert</a>
+								<a href="#" class="replace" name="<%= file.nice_name %>" url="<%= file.link_path %>" image="<%= (file.image?) ? true : false %>">Insert</a>
 							</li>
 						</ul>
 					</div>
@@ -102,8 +102,13 @@
 			var url = $(this).attr('url');
 			var isImage = $(this).attr('image');
 			var link = calc_link(name, url, isImage);
-			var ref = calc_link_ref(name, url, isImage);
-			$("#edit_textarea").val($("#edit_textarea").val()+"\n"+ ref);
+			
+			var textarea = $("#edit_textarea");
+			textarea.val(textarea.val() + "\n" + link);
+			textarea.focus();
+			
+			$.scrollTo(textarea, 800)
+			textarea[0].scrollTop = textarea[0].scrollHeight;
 			e.preventDefault();
 			return false;
 		});
@@ -133,16 +138,15 @@
 		});
 	});
 
-	function calc_link(name, url, image){
-		if(image=="true"){
-			return "!["+name+"][]";
-		}else{
-			return "["+name+"][]";
+	function calc_link(name, url, image) {
+		var link = "["+name+"](" + url + ")";
+		
+		if (image == "true")
+		{
+			return "!" + link;
+		} else {
+			return link;
 		}
-	}
-
-	function calc_link_ref(name, url, image){
-		return "[" + name + "](" + url + ")";
 	}
 
 $("#edit_textarea").markItUp(markItUpMarkdownSettings);
