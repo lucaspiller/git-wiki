@@ -23,11 +23,6 @@
 	 	document.write(time_ago_in_words(<%= @page.updated_at.for_time_ago_in_words %>) + ' ago');
 		</script>
 	</div>
-	
-	<div id="branch" class="page_info">
-		<strong>Branch:</strong>
-		<%= $repo.current_branch %>
-	</div>
 </div>
 
 <div id="cont">

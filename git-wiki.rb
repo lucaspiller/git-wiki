@@ -121,16 +121,6 @@ get '/a/tarball' do
   File.open(archive).read
 end
 
-get '/a/branches' do
-  @branches = $repo.branches
-  show :branches, "Branches List"
-end
-
-get '/a/branch/:branch' do
-  $repo.checkout(params[:branch])
-  redirect '/' + HOMEPAGE
-end
-
 get '/a/history' do
   @history = $repo.log
   show :branch_history, "Branch History"
@@ -143,39 +133,6 @@ get '/a/revert_branch/:sha' do
     $repo.commit('reverted branch')
   end
   redirect '/a/history'
-end
-
-get '/a/merge_branch/:branch' do
-  $repo.merge(params[:branch])
-  redirect '/' + HOMEPAGE
-end
-
-get '/a/delete_branch/:branch' do
-  $repo.branch(params[:branch]).delete
-  redirect '/a/branches'
-end
-
-post '/a/new_branch' do
-  $repo.branch(params[:branch]).create
-  $repo.checkout(params[:branch])
-  if params[:type] == 'blank'
-    # clear out the branch
-    $repo.chdir do
-      Dir.glob("*").each do |f|
-        File.unlink(f)
-        $repo.remove(f)
-      end
-      touchfile
-      $repo.commit('clean branch start')
-    end
-  end
-  redirect '/a/branches'
-end
-
-post '/a/new_remote' do
-  $repo.add_remote(params[:branch_name], params[:branch_url])
-  $repo.fetch(params[:branch_name])
-  redirect '/a/branches'
 end
 
 get '/a/search' do
