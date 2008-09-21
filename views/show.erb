@@ -15,26 +15,6 @@
 		<li>
 			<a href="/h/<%= @page.basename %>">History</a>
 		</li>
-
-		<% if @page.previous_commit %>
-			<li>
-				&bull;
-			</li>
-		
-			<li>
-				<a href="/h/<%= @page.basename %>/<%= @page.previous_commit %>">Older</a>
-			</li>
-		<% end %>
-		
-		<% if @page.next_commit %>
-			<li>
-				&bull;
-			</li>
-			
-			<li>
-				<a href="/h/<%= @page.basename %>/<%= @page.next_commit %>">Newer</a>
-			</li>
-		<% end %>
 	</ul>
 
 	<div id="last_changed" class="page_info">
