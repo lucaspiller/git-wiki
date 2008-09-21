@@ -43,7 +43,15 @@ end
 
 get '/e/:page', OPTS_RE do
   @page = Page.new(params[:page])
-  show :edit, "Editing #{@page.title}", { :markitup => true }
+  if @page.tracked?
+    @back_url, @back_title = '/' + @page.intname, @page.title
+    'Edit'
+  else
+    @back_url, @back_title = '/', 'Home'
+    @title = 'Create'
+  end
+  
+  show :edit, @title, { :markitup => true }
 end
 
 post '/e/:page', OPTS_RE do
@@ -66,17 +74,25 @@ end
 
 get '/h/:page/:rev', OPTS_RE do
   @page = Page.new(params[:page], params[:rev])
-  show :show, "#{@page.title} (version #{params[:rev]})"
+  
+  @ppage = Page.new(params[:page])
+  @back_url, @back_title = '/' + @ppage.intname, @ppage.title
+  
+  show :show, "Version #{params[:rev]}"
 end
 
 get '/h/:page', OPTS_RE do
   @page = Page.new(params[:page])
-  show :history, "History of #{@page.title}"
+  @back_url, @back_title = '/' + @page.intname, @page.title
+  show :history, "History"
 end
 
 get '/d/:page/:rev', OPTS_RE do
   @page = Page.new(params[:page])
-  show :delta, "Diff of #{@page.title}"
+  
+  @back_url, @back_title = '/' + @page.intname, @page.title
+  
+  show :delta, "Diff"
 end
 
 # application paths (/a/ namespace)
@@ -86,7 +102,7 @@ get '/a/list' do
   pages = Page.list(false) # recurse
   # only listing pages and stripping page_extension from url
   @pages = pages.select { |f,bl| !f.attach_dir_or_file? && !bl.tree? }.sort.map { |name, blob| Page.new(name.strip_page_extension) } rescue []
-  show(:list, 'Listing pages')
+  show(:list, 'Home')
 end
 
 
@@ -95,7 +111,7 @@ get '/a/list/all' do
   pages = Page.list(true) # recurse
   # only listing pages and stripping page_extension from url
   @pages = pages.select { |f,bl| !f.attach_dir_or_file? && !bl.tree? }.sort.map { |name, blob| Page.new(name.strip_page_extension) } rescue []
-  show(:list, 'Listing pages')
+  show(:list, 'Home')
 end
 
 # list only pages in a subdirectory, not recursive, exclude dirs
@@ -104,7 +120,7 @@ get '/a/list/:page', OPTS_RE do
   pages = Page.list(true) # recurse
   # only listing pages and stripping page_extension from url
   @pages = pages.select { |f,bl| !f.attach_dir_or_file? && !bl.tree? && File.dirname(f)==page_dir }.sort.map { |name, blob| Page.new(name.strip_page_extension) } rescue []
-  show(:list, 'Listing pages')
+  show(:list, 'Home')
 end
 
 get '/a/patch/:page/:rev', OPTS_RE do
@@ -123,7 +139,8 @@ end
 
 get '/a/history' do
   @history = $repo.log
-  show :branch_history, "Branch History"
+  @back_url, @back_title = '/', 'Home'
+  show :branch_history, "History"
 end
 
 get '/a/revert_branch/:sha' do
@@ -137,7 +154,12 @@ end
 
 get '/a/search' do
   @search = params[:search]
-  @grep = $repo.object('HEAD').grep(@search, nil, { :ignore_case => true })
+  begin
+    @grep = $repo.object('HEAD').grep(@search, nil, { :ignore_case => true })
+  rescue
+    @grep = []
+  end
+  @back_url, @back_title = '/', 'Home'
   show :search, 'Search Results'
 end
 
@@ -145,7 +167,8 @@ end
 
 get '/a/file/upload/:page', OPTS_RE do
   @page = Page.new(params[:page])
-  show :attach, 'Attach File for ' + @page.title
+  @back_url, @back_title = '/' + @page.intname, @page.title
+  show :attach, 'Attach File'
 end
 
 post '/a/file/upload/:page', OPTS_RE do
@@ -170,6 +193,7 @@ end
 get '/:page', OPTS_RE do
   @page = Page.new(params[:page])
   if @page.tracked?
+    @back_url, @back_title = '/', 'Home'
     show(:show, @page.title)
   else
     @page = Page.new(File.join(params[:page], HOMEPAGE)) if File.directory?(@page.filename.strip_page_extension) # use index page if dir
