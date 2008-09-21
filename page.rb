@@ -42,6 +42,11 @@ class Page
   def updated_at
     commit.committer_date rescue Time.now
   end
+  
+  # Returns details of the latest commit
+  def commit
+    @commit ||= $repo.log.object(@rev || 'master').path(@name).first
+  end
 
   # Returns the raw text of the body
   def raw_body
