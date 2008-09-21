@@ -37,6 +37,10 @@ post '/e/:page/preview', OPTS_RE do
   @page.preview(params["markdown"])
 end
 
+get '/e/new', OPTS_RE do
+  redirect '/e/' + params[:page].scorify
+end
+
 get '/e/:page', OPTS_RE do
   @page = Page.new(params[:page])
   show :edit, "Editing #{@page.title}", { :markitup => true }
