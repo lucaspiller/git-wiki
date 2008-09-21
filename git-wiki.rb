@@ -79,7 +79,7 @@ end
 
 # list only top level, no recurse, exclude dirs
 get '/a/list' do
-  pages = Page.list(false) # recurse
+  pages = Page.list($repo.log.first.gtree, false) # recurse
   # only listing pages and stripping page_extension from url
   @pages = pages.select { |f,bl| !f.attach_dir_or_file? && !bl.tree? }.sort.map { |name, blob| Page.new(name.strip_page_extension) } rescue []
   show(:list, 'Listing pages')
@@ -88,7 +88,7 @@ end
 
 # recursive list from root, exlude dirs
 get '/a/list/all' do
-  pages = Page.list(true) # recurse
+  pages = Page.list($repo.log.first.gtree, true) # recurse
   # only listing pages and stripping page_extension from url
   @pages = pages.select { |f,bl| !f.attach_dir_or_file? && !bl.tree? }.sort.map { |name, blob| Page.new(name.strip_page_extension) } rescue []
   show(:list, 'Listing pages')
@@ -97,7 +97,7 @@ end
 # list only pages in a subdirectory, not recursive, exclude dirs
 get '/a/list/:page', OPTS_RE do
   page_dir = params[:page]
-  pages = Page.list(true) # recurse
+  pages = Page.list($repo.log.first.gtree, true) # recurse
   # only listing pages and stripping page_extension from url
   @pages = pages.select { |f,bl| !f.attach_dir_or_file? && !bl.tree? && File.dirname(f)==page_dir }.sort.map { |name, blob| Page.new(name.strip_page_extension) } rescue []
   show(:list, 'Listing pages')
@@ -200,9 +200,14 @@ post '/a/file/delete/:page_files/:file.:ext', OPTS_RE do
   "Deleted #{filename}"
 end
 
-get "/f/:page/:file.:ext", OPTS_RE do
-  @page = Page.new(params[:page])
-  send_file(File.join(@page.attachment_dir, params[:file] + '.' + params[:ext]))
+
+
+
+
+get "/:page_files/:file.:ext", OPTS_RE do
+  page_base = Page.calc_page_from_attach_dir(params[:page_files])
+  @page = Page.new(page_base)
+  send_file(File.join(@page.attach_dir, params[:file] + '.' + params[:ext]))
 end
 
 # least specific wildcards (:page) need to go last
