@@ -1,75 +1,109 @@
 class Page
   attr_reader :name, :basename, :filename, :attach_dir, :subwiki
 
+  # Creates a new instant of page basename, at the given revision
+  #
+  # Basename can be any format, as it is converted
+  # Revision is a hash
   def initialize(basename, rev=nil)
-    @basename = basename
-    @name = basename+PAGE_FILE_EXT
+    @basename = basename.scorify
+    @name = basename + PAGE_FILE_EXT
     @rev = rev
-    @filename = verify_file_under_repo(File.join(GIT_REPO, @name))
-    @attach_dir = calc_attach_dir(@basename)
+    @filename = File.join(GIT_REPO, @name)
     @subwiki = (/\// =~ @basename) ? File.dirname(@basename) : nil # foo/bar/baz => foo/bar
   end
 
-  def unwiki(string)
-    string.downcase
-  end
-
+  # Returns the title of the page in CamelCase
   def title
-    @basename.unwiki_filename
+    @basename.wikify
   end
 
-  def html_link(wiki_page_title)
-    class_not_found = (self.tracked?) ? "" : %{class="notfound"}
-    %{<a #{class_not_found} href="/#{self.basename}">#{wiki_page_title}</a>}
+  # Returns the filename (including extension) of the page
+  def filename
+    @basename + PAGE_FILE_EXT
+  end
+  
+  # Returns the internal name (used for urls), seperated_by_underscores
+  def intname
+    @basename
   end
 
+  # Returns the parsed body of the page, or the raw body if this fails
   def body
-    @body ||= convert_markdown_to_html(raw_body)
+    @body ||= Page.convert_raw_to_html(raw_body)
   end
 
+  # Returns the branch name
   def branch_name
     $repo.current_branch
   end
 
+  # Returns the time when the page was last changed
   def updated_at
     commit.committer_date rescue Time.now
   end
 
+  # Returns the raw text of the body
   def raw_body
     if @rev
-       @raw_body ||= blob.contents
+      @raw_body ||= blob.contents
     else
       @raw_body ||= File.exists?(@filename) ? File.read(@filename) : ''
     end
   end
+  
+  # Attachmentment directory for this page
+  def attachment_dir
+    File.join(GIT_REPO, @basename + ATTACH_DIR_SUFFIX)
+  end
 
+  # Update this page
+  #
+  # Content is the new body
+  # Message is the commit message
   def update(content, message=nil)
+    # normalise content
+    content = Page.normalise_body(content)
+    
+    # create subdirectory if needed
     dirname = File.dirname(@filename)
-    FileUtils.mkdir_p(dirname) if(!File.exist?(dirname)) # create subdirectory if needed
+    FileUtils.mkdir_p(dirname) unless File.exist?(dirname)
+    
+    # Write changes to file
     File.open(@filename, 'w') { |f| f << content }
-    commit_message = tracked? ? "edited #{@basename}" : "created #{@basename}"
-    commit_message += ' : ' + message if message && message.length > 0
+    
+    # Create commit message
+    commit_message = tracked? ? "edited #{@basename.wikify}" : "created #{@basename.wikify}"
+    commit_message += ' : ' + message unless message.blank?
+    
+    # Commit changes
     begin
       $repo.add(@name)
       $repo.commit(commit_message)
     rescue
       nil
     end
-    @body = nil; @raw_body = nil
-    @body
   end
 
+  # Delete this page
   def delete
+    # Ensure file exists
     if File.exists?(@filename)
+      
+      # Remove file
       File.unlink(@filename)
-      attach_dir_exists = File.exist?(verify_file_under_repo(@attach_dir))
-
+      
+      # Remove attachment dir if it exists
+      attach_dir_exists = File.exist?(attachment_dir)
       if attach_dir_exists
         attachments.each { |a| File.unlink(a.path) }
-        Dir.rmdir(@attach_dir)
+        Dir.rmdir(attachment_dir)
       end
 
-      commit_message = "removed #{@basename}"
+      # Set commit message
+      commit_message = "removed #{@basename.wikify}"
+      
+      # Commit changes
       begin
         $repo.remove(@filename)
         $repo.remove(@attach_dir, { :recursive => true }) if attach_dir_exists
@@ -80,108 +114,77 @@ class Page
     end
   end
 
+  # Returns true if the page is tracked in the repository
   def tracked?
     $repo.ls_files.keys.include?(@name)
   end
 
+  # Returns the repository history for this page
   def history
     return nil unless tracked?
     @history ||= $repo.log.path(@name)
   end
 
+  # Returns the changes between the master revision and rev in patch format
   def delta(rev)
     $repo.diff(commit, rev).path(@name).patch
   end
 
-  def commit
-    @commit ||= $repo.log.object(@rev || 'master').path(@name).first
-  end
-
-  def previous_commit
-    @previous_commit ||= $repo.log(2).object(@rev || 'master').path(@name).to_a[1]
-  end
-
-  def next_commit
-    begin
-      if (self.history.first.sha == self.commit.sha)
-        @next_commit ||= nil
-      else
-        matching_index = nil
-        history.each_with_index { |c, i| matching_index = i if c.sha == self.commit.sha }
-        @next_commit ||= history.to_a[matching_index - 1]
-      end
-    rescue
-      @next_commit ||= nil
-    end
-  end
-
-  def version(rev)
-    data = blob.contents
-    convert_markdown_to_html(data)
-  end
-
+  # Returns the blob for the current revision
   def blob
     @blob ||= ($repo.gblob(@rev + ':' + @name))
   end
 
-  # throws error if the expanded filepath is not under the repos,
-  # prevent people from trying to get out of sandbox using .. or other (~)
-  # Requires that GIT_REPO is expanded
-  def verify_file_under_repo(filepath)
-    unless File.expand_path(filepath).starts_with?(GIT_REPO)
-      raise "Invalid path=#{filepath}, must be under git-wiki repository"
-    end
-    filepath
-  end
-
-  # calculate attachment dir, foo => /wiki/foo_files, foo/bar => /wiki/foo/bar_files
-  def calc_attach_dir(page_base)
-    page_full_path = File.join(GIT_REPO, unwiki(page_base)+ATTACH_DIR_SUFFIX)
-  end
-
-  # calculate the pagename from the attachment dir, foo_files => foo, foo/bar_files => foo/bar
-  def self.calc_page_from_attach_dir(attach_dir)
-    attach_dir[0...-ATTACH_DIR_SUFFIX.size] # return without suffix
-  end
-
   # return a hash of file, blobs (pass true for recursive to drill down into subdirs)
-  def self.list(git_tree, recursive, dirname=nil)
+  def self.list(recursive, dirname=nil, git_tree = $repo.log.first.gtree)
     file_blobs = {}
+    
+    # find files in base directory
     git_tree.children.each do |file, blob|
-      unless dirname.nil? || dirname.empty? # prepend dirname if any
+      unless dirname.blank?
         file = File.join(dirname, file)
       end
       file_blobs[file] = blob
     end
+    
+    # recurse if true
     if recursive
       file_blobs.each do |file, blob|
         if blob.tree?
-          file_blobs.merge!( self.list(blob, true, file) )
+          file_blobs.merge!( self.list(true, file, blob) )
         end
       end
     end
+    
     file_blobs
   end
 
-  # save a file into the _attachments directory
+  # wrapper for old method name
   def save_file(file, name = '')
-    if name.size > 0
-      filename = name + File.extname(file[:filename])
+    save_attachment(file, name)
+  end
+
+  # save a file into the _attachments directory
+  def save_attachment(file, name = '')
+    unless name.blank?
+      basename = name.scorify
     else
-      filename = file[:filename]
+      basename = File.basename(file[:filename]).scorify
     end
-    filename = filename.wiki_filename # convert to wiki friendly name
-    ext = File.extname(filename)
-    filename = File.basename(filename, ext).gsub('.','-')+ext.downcase #remove periods from basename, messes up route matching
+    
+    ext = File.extname(file[:filename])
+    
+    # calculate file path
+    new_file = File.join(attachment_dir, basename + ext)
 
-    new_file = verify_file_under_repo(File.join(@attach_dir, filename))
+    # create directory
+    FileUtils.mkdir_p(attachment_dir) unless File.exists?(attachment_dir)
+    
+    # write file
+    File.open(new_file, 'w') { |f| file[:tempfile]; f.write(file[:tempfile].read) }
 
-    FileUtils.mkdir_p(@attach_dir) if !File.exists?(@attach_dir)
-    f = File.new(new_file, 'w')
-    f.write(file[:tempfile].read)
-    f.close
-
-    commit_message = "uploaded #{filename} for #{@basename}"
+    # commit changes
+    commit_message = "uploaded #{filename} for #{@basename.wikify}"
     begin
       $repo.add(new_file)
       $repo.commit(commit_message)
@@ -190,12 +193,21 @@ class Page
     end
   end
 
+  # wrapper for old method name
   def delete_file(file)
-    file_path = verify_file_under_repo(File.join(@attach_dir, file))
+    delete_attachment(file)
+  end
+  
+  def delete_attachment(file)
+    # calculate path
+    path = File.join(attachment_dir, file.scorify)
+    
     if File.exists?(file_path)
+      # delete file
       File.unlink(file_path)
 
-      commit_message = "removed #{file} for #{@basename}"
+      # commit changes
+      commit_message = "removed #{file} for #{@basename.wikify}"
       begin
         $repo.remove(file_path)
         $repo.commit(commit_message)
@@ -206,83 +218,54 @@ class Page
     end
   end
 
+  # return array of attachments for page, or false if none exist
   def attachments
-    if File.exists?(@attach_dir)
-      return Dir.glob(File.join(@attach_dir, '*')).map { |f| Attachment.new(f, unwiki(@basename)) }
+    if File.exists?(attachment_dir)
+      return Dir.glob(File.join(attachment_dir, '*')).map { |f| Attachment.new(f, intname) }
     else
       false
     end
   end
 
-  def preview(markdown)
-    convert_markdown_to_html(markdown)
+  # Converts the raw markup to html for a preview
+  def self.preview(raw)
+    convert_markdown_to_html(raw)
   end
 
-
-
-  EXT_WIKI_WORD_REGEX = /\[\[([A-Za-z0-9\.\/_ :-]+)\]\]/ unless defined?(EXT_WIKI_WORD_REGEX)
-  ESCAPE_FOR_MARUKU = /[^a-zA-Z0-9\s\n\.\/]/
-
-  # maruku needs double brackets, colons and other things escaped (prepend \)
-  def escape_wiki_link(text)
-    text.gsub( EXT_WIKI_WORD_REGEX ) do |wikiword_wbrackets|
-      wikiword_wbrackets.gsub( ESCAPE_FOR_MARUKU ) { |w| '\\'+w }
-    end
-  end
-
-  def wiki_linked(text)
-    # disable automatic WikiWord, force use of [[ ]] for consistency and less false matches
-    #text.gsub!(  /([A-Z][a-z]+[A-Z][A-Za-z0-9]+)/  ) do |wiki_word| # simple WikiWords
-    #  page, wiki_page_title = calc_page_and_title_from_wikiword(wiki_word)
-    #  page.html_link(wiki_page_title)
-    #end
-
-    text.gsub!( EXT_WIKI_WORD_REGEX ) do |wikiword_wbrackets| # [[any words between double brackets]]
-      wiki_word = wikiword_wbrackets[2..-3] # remove outer two brackets
-      page, wiki_page_title = calc_page_and_title_from_wikiword(wiki_word)
-      page.html_link(wiki_page_title)
-    end
-    text
-  end
-
-  # returns page_name, wiki_page_title from wiki_word, adjust for abs/rel path wiki words (foo: bar) or (:abs)
-  def calc_page_and_title_from_wikiword(wiki_word)
-    wiki_page_title = wiki_word # as is for now
-    page_name = wiki_word.gsub( /\s*:\s*/, '/').downcase
-    if self.subwiki && !page_name.starts_with?('/') # unless page starts with /, remain in subwiki, so prefix with dir
-      page_name = File.join(self.subwiki, page_name)
-    end
-    page_name = page_name[1..-1] if page_name.starts_with?('/')
-    page_name = page_name + HOMEPAGE if page_name.ends_with?('/')
-    page_name = page_name.wiki_filename
-    page = Page.new(page_name)
-    return page, wiki_page_title
-  end
-
-  def convert_markdown_to_html(markdown)
-    wiki_linked(Maruku.new(escape_wiki_link(markdown)).to_html)
-  end
-
-
+  # attachment class
   class Attachment
     attr_accessor :path, :page_name
-    def initialize(file_path, name)
-      @path = file_path
-      @page_name = name
+    
+    # create new attachment
+    #
+    # path is the path of the attachment
+    # page is the name of the parent page
+    def initialize(path, page)
+      @path = path
+      @page_name = page
     end
 
+    # returns the filename of the attachment
     def name
       File.basename(@path)
     end
-
-    def link_path
-      File.join("/#{@page_name}#{ATTACH_DIR_SUFFIX}", name) # /foo/bar_files/file.jpg
+    
+    # returns the name of attachment
+    def nice_name
+      name.gsub(/\..+/, '').wikify
     end
 
+    # returns the relative url of the attachment
+    def link_path
+      File.join("/f/#{@page_name}", name) # /foo/bar_files/file.jpg
+    end
+
+    # returns the relative url to delete the attachment
     def delete_path
       File.join('/a/file/delete', "#{@page_name}#{ATTACH_DIR_SUFFIX}", name) # /a/file/delete/foo/bar_files/file.jpg
     end
 
+    # returns true if the attachment is an image
     def image?
       ext = File.extname(@path)
       case ext.downcase
@@ -291,15 +274,53 @@ class Page
       end
     end
 
+    # returns the size of the attachment (in human form)
     def size
       size = File.size(@path).to_i
       case
-      when size.to_i == 1;     "1 Byte"
-      when size < 1024;        "%d Bytes" % size
-      when size < (1024*1024); "%.2f KB"  % (size / 1024.0)
-      else                     "%.2f MB"  % (size / (1024 * 1024.0))
+      when size.to_i == 1;     "1 byte"
+      when size < 1024;        "%d bytes" % size
+      when size < (1024*1024); "%.2f kilobytes"  % (size / 1024.0)
+      else                     "%.2f megabytes"  % (size / (1024 * 1024.0))
       end.sub(/([0-9])\.?0+ /, '\1 ' )
     end
+    
+  end
+
+  protected
+
+  # Converts raw body to html
+  def self.convert_raw_to_html(raw)
+    Maruku.new(convert_links(normalise_links(raw))).to_html
+  end
+
+  # Normalises the body
+  # Atm just converts links to WikiWords
+  def self.normalise_body(body)
+    normalise_links(body)
+  end
+
+  # Returns a markdown link
+  def self.markdown_link(rel_url, title)
+    "[%s](/%s)" % [title, rel_url]
+  end
+  
+  EXT_WIKI_WORD_REGEX = /\[\[([^\]]+)\]\]/ unless defined?(EXT_WIKI_WORD_REGEX)
+
+  # Escape inside links, and convert to WikiWords
+  def self.normalise_links(text)
+    text.gsub( EXT_WIKI_WORD_REGEX ) do |link|
+      "\[\[%s\]\]" % link[2..-3].wikify
+    end
+  end
+
+  # Convert wiki links to markdown links
+  def self.convert_links(text)
+    text.gsub!( EXT_WIKI_WORD_REGEX ) do |link| # [[any words between double brackets]]
+      wiki_word = link[2..-3].wikify # remove outer two brackets
+      self.markdown_link(wiki_word.scorify, wiki_word)
+    end
+    text
   end
 
 end
